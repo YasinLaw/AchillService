@@ -13,5 +13,11 @@ namespace AchillService.Models
         [Required]
         [ConcurrencyCheck]
         public string ClassName { get; set; }
+
+        [ConcurrencyCheck]
+        public int PublicKey { get; set; }
+
+        [ConcurrencyCheck]
+        public int PrivateKey { get; set; }
     }
 }

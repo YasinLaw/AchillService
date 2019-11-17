@@ -24,6 +24,8 @@ namespace AchillService.Data
 
         public DbSet<Issue> Issues { get; set; }
 
+        public DbSet<PublicKey> PublicKeys { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             :base (options)
         {

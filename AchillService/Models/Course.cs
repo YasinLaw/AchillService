@@ -14,7 +14,6 @@ namespace AchillService.Models
         [ConcurrencyCheck]
         public string CourseName { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [ConcurrencyCheck]
         public int PublicKey { get; set; }
 

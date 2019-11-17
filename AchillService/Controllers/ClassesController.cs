@@ -82,6 +82,12 @@ namespace AchillService.Controllers
         [HttpPost]
         public async Task<ActionResult<Class>> PostClass(Class @class)
         {
+            var publicKey = new PublicKey { Type = PublicKeyType.Class };
+            _context.PublicKeys.Add(publicKey);
+            await _context.SaveChangesAsync();
+
+            @class.PublicKey = publicKey.Key;
+
             _context.Classes.Add(@class);
             await _context.SaveChangesAsync();
 
