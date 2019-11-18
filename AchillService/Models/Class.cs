@@ -17,7 +17,10 @@ namespace AchillService.Models
         [ConcurrencyCheck]
         public int PublicKey { get; set; }
 
+        [MaxLength(20)]
+        [MinLength(6)]
+        [Required]
         [ConcurrencyCheck]
-        public int PrivateKey { get; set; }
+        public string PrivateKey { get; set; }
     }
 }

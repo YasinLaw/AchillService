@@ -22,11 +22,11 @@ namespace AchillService.Models
 
         [Required]
         [ConcurrencyCheck]
-        public string TeacherName { get; set; }
+        public string FacultyName { get; set; }
 
         [Required]
         [ConcurrencyCheck]
-        public string TeacherId { get; set; }
+        public string FacultyId { get; set; }
 
         [ConcurrencyCheck]
         public string Topic { get; set; }

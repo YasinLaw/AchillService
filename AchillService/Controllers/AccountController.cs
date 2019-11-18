@@ -42,7 +42,7 @@ namespace AchillService.Controllers
             {
                 return StatusCode(StatusCodes.Status406NotAcceptable);
             }
-            if (await userManager.FindByEmailAsync(model.Email) != null 
+            if (await userManager.FindByEmailAsync(model.Email) != null
                 && await userManager.FindByNameAsync(model.Username) != null)
             {
                 return StatusCode(StatusCodes.Status409Conflict);
@@ -56,41 +56,41 @@ namespace AchillService.Controllers
                 Type = model.Type
             };
 
-            
-
             var result = await userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
-            {if (user.Type == 0)
+            {
+                switch (user.Type)
                 {
-                    if (!await roleManager.RoleExistsAsync("Student"))
-                    {
-                        await roleManager.CreateAsync(new IdentityRole("Student"));
-                    }
-                    await userManager.AddToRoleAsync(user, "Student");
-                }
-                else if (user.Type == 1)
-                {
-                    if (!await roleManager.RoleExistsAsync("Faculty"))
-                    {
-                        await roleManager.CreateAsync(new IdentityRole("Faculty"));
-                    }
-                    await userManager.AddToRoleAsync(user, "Faculty");
-                }
-                else if (user.Type == 2)
-                {
-                    if (!await roleManager.RoleExistsAsync("Administrator"))
-                    {
-                        await roleManager.CreateAsync(new IdentityRole("Administrator"));
-                    }
-                    await userManager.AddToRoleAsync(user, "Administrator");
-                }
-                else if (user.Type == 4)
-                {
-                    if (!await roleManager.RoleExistsAsync("Developer"))
-                    {
-                        await roleManager.CreateAsync(new IdentityRole("Developer"));
-                    }
-                    await userManager.AddToRoleAsync(user, "Developer");
+                    case UserType.Student:
+                        if (!await roleManager.RoleExistsAsync("Student"))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole("Student"));
+                        }
+                        await userManager.AddToRoleAsync(user, "Student");
+                        break;
+                    case UserType.Faculty:
+                        if (!await roleManager.RoleExistsAsync("Faculty"))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole("Faculty"));
+                        }
+                        await userManager.AddToRoleAsync(user, "Faculty");
+                        break;
+                    case UserType.Administrator:
+                        if (!await roleManager.RoleExistsAsync("Administrator"))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole("Administrator"));
+                        }
+                        await userManager.AddToRoleAsync(user, "Administrator");
+                        break;
+                    case UserType.Developer:
+                        if (!await roleManager.RoleExistsAsync("Developer"))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole("Developer"));
+                        }
+                        await userManager.AddToRoleAsync(user, "Developer");
+                        break;
+                    default:
+                        break;
                 }
                 return Ok();
             }

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AchillService.Controllers
 {
-    //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Developer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     [Route("api/[controller]")]
     [ApiController]
     public class ClassesController : ControllerBase
@@ -25,30 +25,50 @@ namespace AchillService.Controllers
 
         // GET: api/Classes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Class>>> GetClasses()
+        public async Task<IActionResult> GetClasses()
         {
-            return await _context.Classes.ToListAsync();
+            return Ok(await _context.Classes.ToListAsync());
         }
 
-        // GET: api/Classes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Class>> GetClass(Guid id)
+        public async Task<IActionResult> GetClass(Guid id)
         {
             var @class = await _context.Classes.FindAsync(id);
+            if (@class == null)
+            {
+                return NotFound();
+            }
+            return Ok(@class);
+        }
+
+        // GET: api/Classes/publickey/5
+        /// <summary>
+        /// Get class by public key
+        /// </summary>
+        /// <param name="publicKey"></param>
+        /// <returns></returns>
+        [Route("/publickey")]
+        [HttpGet("{publicKey}")]
+        public async Task<IActionResult> GetClassByPublicKey(int publicKey)
+        {
+            var @class = await _context.Classes
+                .Where(x => x.PublicKey == publicKey)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             if (@class == null)
             {
                 return NotFound();
             }
 
-            return @class;
+            return Ok(@class);
         }
 
         // PUT: api/Classes/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutClass(Guid id, Class @class)
+        public async Task<IActionResult> PutClass(Guid id, [FromBody] Class @class)
         {
             if (id != @class.ClassId)
             {
@@ -80,18 +100,23 @@ namespace AchillService.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<Class>> PostClass(Class @class)
+        public async Task<IActionResult> PostClass([FromBody] Class @class)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            // Wait for a new generated public key
             var publicKey = new PublicKey { Type = PublicKeyType.Class };
             _context.PublicKeys.Add(publicKey);
             await _context.SaveChangesAsync();
 
+            // Assign public key to class
             @class.PublicKey = publicKey.Key;
 
-            _context.Classes.Add(@class);
+            await _context.Classes.AddAsync(@class);
             await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetClass", new { id = @class.ClassId }, @class);
+            return CreatedAtAction("GetClassByPublicKey", new { id = @class.ClassId }, @class);
         }
 
         // DELETE: api/Classes/5
@@ -99,11 +124,16 @@ namespace AchillService.Controllers
         public async Task<ActionResult<Class>> DeleteClass(Guid id)
         {
             var @class = await _context.Classes.FindAsync(id);
+            
             if (@class == null)
             {
                 return NotFound();
             }
+            // Delete publicKey for this class
+            var key = await _context.PublicKeys
+                .FirstOrDefaultAsync(x => x.Key == @class.PublicKey);
 
+            _context.PublicKeys.Remove(key);
             _context.Classes.Remove(@class);
             await _context.SaveChangesAsync();
 

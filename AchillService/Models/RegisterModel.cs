@@ -19,6 +19,6 @@ namespace AchillService.Models
         public bool Gender { get; set; }
 
         [Required]
-        public int Type { get; set; }
+        public UserType Type { get; set; }
     }
 }

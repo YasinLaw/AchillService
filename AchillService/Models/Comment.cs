@@ -17,6 +17,10 @@ namespace AchillService.Models
         [ConcurrencyCheck]
         public Guid IssueId { get; set; }
 
+        [Required]
+        [ConcurrencyCheck]
+        public string Username { get; set; }
+
         [ConcurrencyCheck]
         public DateTime CommentTime { get; set; } = DateTime.Now;
     }

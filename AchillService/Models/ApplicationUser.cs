@@ -6,6 +6,14 @@ namespace AchillService.Models
     {
         public bool Gender { get; set; }
 
-        public int Type { get; set; }
+        public UserType Type { get; set; }
+    }
+
+    public enum UserType
+    {
+        Student,
+        Faculty,
+        Administrator,
+        Developer
     }
 }
