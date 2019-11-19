@@ -8,22 +8,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AchillService.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [ApiController]
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
-        private readonly ApplicationDbContext applicationDbContext;
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ApplicationDbContext applicationDbContext)
+            ApplicationDbContext context)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
-            this.applicationDbContext = applicationDbContext;
+            this._context = context;
         }
         /// <summary>
         /// Call /api/register
@@ -35,7 +35,7 @@ namespace AchillService.Controllers
         /// <param name="type">int</param>
         /// <param name="realname">string</param>
         /// <returns></returns>
-        [HttpPost("~/api/register")]
+        [HttpPost("~/api/auth/register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -94,12 +94,25 @@ namespace AchillService.Controllers
                     default:
                         break;
                 }
-                return Ok();
+                return CreatedAtAction("GetApplicationUser", new { id = user.Id }, user);
             }
             else
             {
                 return BadRequest(result.Errors);
             }
+        }
+
+        [HttpGet("~/api/auth/{id}")]
+        public async Task<IActionResult> GetApplicationUser(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            
+            if (user == null)
+            {
+                return NotFound(id);
+            }
+
+            return Ok(user);
         }
     }
 }

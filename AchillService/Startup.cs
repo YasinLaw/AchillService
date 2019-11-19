@@ -61,7 +61,7 @@ namespace AchillService
                 .AddServer(options =>
                 {
                     options.UseMvc();
-                    options.EnableTokenEndpoint("/api/token");
+                    options.EnableTokenEndpoint("/api/auth/token");
                     options.AllowPasswordFlow();
                     options.AllowRefreshTokenFlow();
                     options.AcceptAnonymousClients();
