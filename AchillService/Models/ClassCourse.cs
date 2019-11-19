@@ -1,21 +1,18 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace AchillService.Models
 {
     public class ClassCourse
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid OrderId { get; set; }
+        public string ClassId { get; set; }
 
-        [Required]
-        [ConcurrencyCheck]
-        public Guid ClassId { get; set; }
+        [JsonIgnore]
+        public virtual Class Class { get; set; }
 
-        [Required]
-        [ConcurrencyCheck]
-        public Guid CourseId { get; set; }
+        public string CourseId { get; set; }
+
+        [JsonIgnore]
+        public virtual Course Course { get; set; }
     }
 }

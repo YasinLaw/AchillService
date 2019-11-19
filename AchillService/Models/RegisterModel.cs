@@ -20,5 +20,8 @@ namespace AchillService.Models
 
         [Required]
         public UserType Type { get; set; }
+
+        [Required]
+        public string RealName { get; set; }
     }
 }

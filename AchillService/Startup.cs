@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using AchillService.Models;
 using Microsoft.AspNetCore.Identity;
-using AspNet.Security.OpenIdConnect.Primitives;
 using System;
 using OpenIddict.Abstractions;
 
@@ -62,7 +61,7 @@ namespace AchillService
                 .AddServer(options =>
                 {
                     options.UseMvc();
-                    options.EnableTokenEndpoint("/connect/token");
+                    options.EnableTokenEndpoint("/api/token");
                     options.AllowPasswordFlow();
                     options.AllowRefreshTokenFlow();
                     options.AcceptAnonymousClients();
@@ -82,7 +81,6 @@ namespace AchillService
                 .AddValidation();
 
             services.AddControllers().AddNewtonsoftJson();
-            //services.AddMvc().AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

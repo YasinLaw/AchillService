@@ -4,12 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AchillService.Models
 {
-    public class PublicKey
+    public class PublicKey : DbBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid KeyId { get; set; }
-
         public PublicKeyType Type { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

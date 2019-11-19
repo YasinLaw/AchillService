@@ -33,6 +33,7 @@ namespace AchillService.Controllers
         /// <param name="password">string</param>
         /// <param name="gender">bool</param>
         /// <param name="type">int</param>
+        /// <param name="realname">string</param>
         /// <returns></returns>
         [HttpPost("~/api/register")]
         [AllowAnonymous]
@@ -53,7 +54,8 @@ namespace AchillService.Controllers
                 Email = model.Email,
                 UserName = model.Username,
                 Gender = model.Gender,
-                Type = model.Type
+                Type = model.Type,
+                RealName = model.RealName
             };
 
             var result = await userManager.CreateAsync(user, model.Password);

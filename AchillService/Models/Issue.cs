@@ -7,17 +7,13 @@ using System.Threading.Tasks;
 
 namespace AchillService.Models
 {
-    public class Issue
+    public class Issue : DbBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid IssueId { get; set; }
+        [ConcurrencyCheck]
+        public string ClassId { get; set; }
 
         [ConcurrencyCheck]
-        public Guid ClassId { get; set; }
-
-        [ConcurrencyCheck]
-        public Guid CourseId { get; set; }
+        public string CourseId { get; set; }
 
         [Required]
         [ConcurrencyCheck]

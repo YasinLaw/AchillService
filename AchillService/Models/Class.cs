@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AchillService.Models
 {
-    public class Class
+    public class Class : DbBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid ClassId { get; set; }
-
         [Required]
         [ConcurrencyCheck]
         public string ClassName { get; set; }
@@ -22,5 +20,11 @@ namespace AchillService.Models
         [Required]
         [ConcurrencyCheck]
         public string PrivateKey { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<ApplicationUserClass> ApplicationUserClasses { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<ClassCourse> ClassCourses { get; set; }
     }
 }

@@ -5,22 +5,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20191117054247_InitialCreate.cs" />
+    <Compile Remove="Migrations\20191117054247_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20191117165533_AddModels.cs" />
     <Compile Remove="Migrations\20191117165533_AddModels.Designer.cs" />
+    <Compile Remove="Migrations\20191118040909_InitialCreate.cs" />
+    <Compile Remove="Migrations\20191118040909_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20191118041900_InitialCreate.cs" />
+    <Compile Remove="Migrations\20191118041900_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20191118104716_InitialCreate.cs" />
+    <Compile Remove="Migrations\20191118104716_InitialCreate.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="OpenIddict" Version="2.0.1" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.1" />
   </ItemGroup>

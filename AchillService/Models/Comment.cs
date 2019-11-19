@@ -7,17 +7,12 @@ using System.Threading.Tasks;
 
 namespace AchillService.Models
 {
-    public class Comment
+    public class Comment : DbBase
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CommentId { get; set; }
-
         [Required]
         [ConcurrencyCheck]
-        public Guid IssueId { get; set; }
+        public string IssueId { get; set; }
 
-        [Required]
         [ConcurrencyCheck]
         public string Username { get; set; }
 

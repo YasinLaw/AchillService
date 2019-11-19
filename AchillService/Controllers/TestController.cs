@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AchillService.Controllers
 {
@@ -7,17 +8,11 @@ namespace AchillService.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Faculty")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpGet("hello")]
         public string GetHello()
         {
-            string str = "";
-            foreach (var claim in User.Claims)
-            {
-                str += claim;
-                str += " ";
-            }
-            return str + User.Identity.Name + "hello";
+            return IdentityHelper.GetApplicationUserId(User.Identity);
         }
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Developer")]

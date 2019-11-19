@@ -27,7 +27,7 @@ namespace AchillService.Controllers
             this.userManager = userManager;
         }
 
-        [HttpPost("~/connect/token")]
+        [HttpPost("~/api/token")]
         [Produces("application/json")]
         public async Task<IActionResult> Exchange()
         {
