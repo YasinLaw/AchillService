@@ -35,7 +35,7 @@ namespace AchillService.Controllers
         /// <param name="type">int</param>
         /// <param name="realname">string</param>
         /// <returns></returns>
-        [HttpPost("~/api/auth/register")]
+        [HttpPost("~/api/auth/account")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -102,7 +102,7 @@ namespace AchillService.Controllers
             }
         }
 
-        [HttpGet("~/api/auth/{id}")]
+        [HttpGet("~/api/auth/account/{id}")]
         public async Task<IActionResult> GetApplicationUser(string id)
         {
             var user = await userManager.FindByIdAsync(id);
