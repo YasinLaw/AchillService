@@ -14,27 +14,28 @@ using OpenIddict.Server;
 
 namespace AchillService.Controllers
 {
+    [Route("api/auth")]
     public class AuthorizationController : ControllerBase
     {
-        private readonly SignInManager<ApplicationUser> signInManager;
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthorizationController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
-        [HttpPost("~/api/auth/token")]
+        [HttpPost("token")]
         [Produces("application/json")]
         public async Task<IActionResult> Exchange()
         {
             var request = HttpContext.GetOpenIdConnectRequest();
             if (request.IsPasswordGrantType())
             {
-                var user = await userManager.FindByNameAsync(request.Username);
+                var user = await _userManager.FindByNameAsync(request.Username);
                 if (user == null)
                 {
                     var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -45,7 +46,7 @@ namespace AchillService.Controllers
                     return Forbid(properties, OpenIddictServerDefaults.AuthenticationScheme);
                 }
 
-                var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+                var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
                 if (!result.Succeeded)
                 {
                     var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -56,7 +57,7 @@ namespace AchillService.Controllers
                     return Forbid(properties, OpenIddictServerDefaults.AuthenticationScheme);
                 }
 
-                var principal = await signInManager.CreateUserPrincipalAsync(user);
+                var principal = await _signInManager.CreateUserPrincipalAsync(user);
                 
                 var ticket = new AuthenticationTicket(principal,
                 new AuthenticationProperties(),
@@ -83,7 +84,7 @@ namespace AchillService.Controllers
             else if (request.IsRefreshTokenGrantType())
             {
                 var info = await HttpContext.AuthenticateAsync(OpenIddictServerDefaults.AuthenticationScheme);
-                var user = await userManager.GetUserAsync(info.Principal);
+                var user = await _userManager.GetUserAsync(info.Principal);
                 if (user == null)
                 {
                     var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -94,7 +95,7 @@ namespace AchillService.Controllers
                     return Forbid(properties, OpenIddictServerDefaults.AuthenticationScheme);
                 }
 
-                if (!await signInManager.CanSignInAsync(user))
+                if (!await _signInManager.CanSignInAsync(user))
                 {
                     var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
@@ -103,7 +104,7 @@ namespace AchillService.Controllers
                     });
                     return Forbid(properties, OpenIddictServerDefaults.AuthenticationScheme);
                 }
-                var principle = await signInManager.CreateUserPrincipalAsync(user);
+                var principle = await _signInManager.CreateUserPrincipalAsync(user);
                 var ticket = new AuthenticationTicket(principle, info.Properties, OpenIddictServerDefaults.AuthenticationScheme);
                 foreach (var claim in ticket.Principal.Claims)
                 {

@@ -1,19 +1,23 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AchillService.Data;
 using AchillService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OpenIddict.Validation;
 
 namespace AchillService.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+    [Route("api/auth/account")]
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
 
         public AccountController(
@@ -21,9 +25,9 @@ namespace AchillService.Controllers
             RoleManager<IdentityRole> roleManager,
             ApplicationDbContext context)
         {
-            this.userManager = userManager;
-            this.roleManager = roleManager;
-            this._context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _context = context;
         }
         /// <summary>
         /// Call /api/register
@@ -35,7 +39,7 @@ namespace AchillService.Controllers
         /// <param name="type">int</param>
         /// <param name="realname">string</param>
         /// <returns></returns>
-        [HttpPost("~/api/auth/account")]
+        [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -43,8 +47,8 @@ namespace AchillService.Controllers
             {
                 return StatusCode(StatusCodes.Status406NotAcceptable);
             }
-            if (await userManager.FindByEmailAsync(model.Email) != null
-                && await userManager.FindByNameAsync(model.Username) != null)
+            if (await _userManager.FindByEmailAsync(model.Email) != null
+                || await _userManager.FindByNameAsync(model.Username) != null)
             {
                 return StatusCode(StatusCodes.Status409Conflict);
             }
@@ -58,43 +62,43 @@ namespace AchillService.Controllers
                 RealName = model.RealName
             };
 
-            var result = await userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 switch (user.Type)
                 {
                     case UserType.Student:
-                        if (!await roleManager.RoleExistsAsync("Student"))
+                        if (!await _roleManager.RoleExistsAsync("Student"))
                         {
-                            await roleManager.CreateAsync(new IdentityRole("Student"));
+                            await _roleManager.CreateAsync(new IdentityRole("Student"));
                         }
-                        await userManager.AddToRoleAsync(user, "Student");
+                        await _userManager.AddToRoleAsync(user, "Student");
                         break;
                     case UserType.Faculty:
-                        if (!await roleManager.RoleExistsAsync("Faculty"))
+                        if (!await _roleManager.RoleExistsAsync("Faculty"))
                         {
-                            await roleManager.CreateAsync(new IdentityRole("Faculty"));
+                            await _roleManager.CreateAsync(new IdentityRole("Faculty"));
                         }
-                        await userManager.AddToRoleAsync(user, "Faculty");
+                        await _userManager.AddToRoleAsync(user, "Faculty");
                         break;
                     case UserType.Administrator:
-                        if (!await roleManager.RoleExistsAsync("Administrator"))
+                        if (!await _roleManager.RoleExistsAsync("Administrator"))
                         {
-                            await roleManager.CreateAsync(new IdentityRole("Administrator"));
+                            await _roleManager.CreateAsync(new IdentityRole("Administrator"));
                         }
-                        await userManager.AddToRoleAsync(user, "Administrator");
+                        await _userManager.AddToRoleAsync(user, "Administrator");
                         break;
                     case UserType.Developer:
-                        if (!await roleManager.RoleExistsAsync("Developer"))
+                        if (!await _roleManager.RoleExistsAsync("Developer"))
                         {
-                            await roleManager.CreateAsync(new IdentityRole("Developer"));
+                            await _roleManager.CreateAsync(new IdentityRole("Developer"));
                         }
-                        await userManager.AddToRoleAsync(user, "Developer");
+                        await _userManager.AddToRoleAsync(user, "Developer");
                         break;
                     default:
                         break;
                 }
-                return CreatedAtAction("GetApplicationUser", new { id = user.Id }, user);
+                return CreatedAtAction("GetApplicationUser", user);
             }
             else
             {
@@ -102,17 +106,45 @@ namespace AchillService.Controllers
             }
         }
 
-        [HttpGet("~/api/auth/account/{id}")]
+        [HttpGet]
+        public async Task<IActionResult> GetApplicationUser()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            return Ok(user);
+        }
+        
+        [Authorize(Roles = "Developer")]
+        [AllowAnonymous]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetApplicationUser(string id)
         {
-            var user = await userManager.FindByIdAsync(id);
-            
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound(id);
             }
-
             return Ok(user);
+        }
+
+        // [Authorize(Roles = "Developer")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteApplicationUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var classes = await _context.ApplicationUsersClasses.Where(x => x.ApplicationUser == user).ToListAsync();
+            var courses = await _context.ApplicationUserCourses.Where(x => x.ApplicationUser == user).ToListAsync();
+
+            _context.ApplicationUsersClasses.RemoveRange(classes);
+            _context.ApplicationUserCourses.RemoveRange(courses);
+
+            await _context.SaveChangesAsync();
+            await _userManager.DeleteAsync(user);
+
+            return Ok();
         }
     }
 }

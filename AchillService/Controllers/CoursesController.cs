@@ -8,19 +8,24 @@ using Microsoft.EntityFrameworkCore;
 using AchillService.Data;
 using AchillService.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using OpenIddict.Validation;
 
 namespace AchillService.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
     [Route("api/course")]
     [ApiController]
     public class CoursesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CoursesController(ApplicationDbContext context)
+        public CoursesController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Courses
@@ -93,14 +98,14 @@ namespace AchillService.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<IActionResult> PostCourse(Course course)
+        public async Task<IActionResult> PostCourse([FromBody] Course course)
         {
             var publicKey = new PublicKey { Type = PublicKeyType.Course };
             _context.PublicKeys.Add(publicKey);
             await _context.SaveChangesAsync();
 
             course.PublicKey = publicKey.Key;
-            course.FacultyId = IdentityHelper.GetApplicationUserId(User.Identity);
+            course.FacultyId = _userManager.GetUserId(User);
             course.FacultyName = User.Identity.Name;
 
             _context.Courses.Add(course);

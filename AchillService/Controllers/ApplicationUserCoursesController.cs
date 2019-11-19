@@ -6,29 +6,34 @@ using Microsoft.EntityFrameworkCore;
 using AchillService.Data;
 using AchillService.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using OpenIddict.Validation;
 
 namespace AchillService.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
     [Route("api/subscribe/course")]
     [ApiController]
     public class ApplicationUserCoursesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ApplicationUserCoursesController(ApplicationDbContext context)
+        public ApplicationUserCoursesController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/subscribe/course
         [HttpGet]
         public async Task<IActionResult> GetApplicationUserCourses()
         {
-            var userId = IdentityHelper.GetApplicationUserId(User.Identity);
+            var user = await _userManager.GetUserAsync(User);
             var courses = await _context.ApplicationUserCourses
                 .AsNoTracking()
-                .Where(x => x.ApplicationUserId == userId)
+                .Where(x => x.ApplicationUserId == user.Id)
                 .Include(x => x.Course)
                 .ToListAsync();
             return Ok(courses);
@@ -86,7 +91,7 @@ namespace AchillService.Controllers
         [HttpPost]
         public async Task<ActionResult<ApplicationUserCourse>> PostApplicationUserCourse(ApplicationUserCourse applicationUserCourse)
         {
-            applicationUserCourse.ApplicationUserId = IdentityHelper.GetApplicationUserId(User.Identity);
+            applicationUserCourse.ApplicationUserId = _userManager.GetUserId(User);
             _context.ApplicationUserCourses.Add(applicationUserCourse);
             try
             {
