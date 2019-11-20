@@ -9,6 +9,7 @@ using AchillService.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
 using OpenIddict.Abstractions;
+using Microsoft.OpenApi.Models;
 
 namespace AchillService
 {
@@ -81,6 +82,11 @@ namespace AchillService
                 .AddValidation();
 
             services.AddControllers().AddNewtonsoftJson();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Achill Service API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,6 +108,13 @@ namespace AchillService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Achill Service API");
             });
         }
     }
