@@ -1,25 +1,43 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AchillService.Models
 {
     public class Issue : DbBase
     {
+        [Required]
         [ConcurrencyCheck]
-        public string ClassId { get; set; }
-
-        [ConcurrencyCheck]
-        public string CourseId { get; set; }
+        public IssueType IssueType { get; set; }
 
         [Required]
+        [ConcurrencyCheck]
+        public string ParentId { get; set; }
+
+        [Required]
+        [ConcurrencyCheck]
+        public string Title { get; set; }
+
         [ConcurrencyCheck]
         public string Description { get; set; }
 
         [ConcurrencyCheck]
+        public string Tags { get; set; }
+
+        [ConcurrencyCheck]
         public bool IsOpen { get; set; } = true;
+
+        [ConcurrencyCheck]
+        public DateTime IssueTime { get; set; } = DateTime.Now;
+        
+        [ConcurrencyCheck]
+        public List<Comment> Comments { get; }
+    }
+
+    public enum IssueType
+    {
+        Course,
+        Class
     }
 }

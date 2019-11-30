@@ -6,21 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AchillService.Data;
 using AchillService.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using OpenIddict.Validation;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AchillService.Controllers
 {
-    [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
-    [Route("api/course")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class CoursesController : ControllerBase
+    public class ClassesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public CoursesController(ApplicationDbContext context,
+        public ClassesController(ApplicationDbContext context,
             UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -28,19 +27,17 @@ namespace AchillService.Controllers
         }
 
         /// <summary>
-        /// 获取所有课程
+        /// 获取所有班级
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
-        public async Task<IActionResult> GetCourses()
+        public async Task<IActionResult> GetClasses()
         {
-            return Ok(await _context.Courses.ToListAsync());
+            return Ok(await _context.Classes.ToListAsync());
         }
 
         /// <summary>
-        /// 通过课程Id获取课程
+        /// 通过班级Id获取班级
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -48,54 +45,57 @@ namespace AchillService.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> GetCourse(string id)
+        public async Task<IActionResult> GetClass(string id)
         {
-            var course = await _context.Courses.FindAsync(id);
+            var @class = await _context.Classes.FindAsync(id);
 
-            if (course == null)
+            if (@class == null)
             {
                 return NotFound();
             }
 
-            return Ok(course);
+            return Ok(@class);
         }
 
+        /// <summary>
+        /// 通过PublicKey获取班级
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         [HttpGet("key/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> GetCourseByPublicKey(int key)
+        public async Task<IActionResult> GetClassByPublicKey(int key)
         {
-            var course = await _context.Courses.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PublicKey == key);
-            
-            if (course == null)
+            var @class = await _context.Classes.FirstOrDefaultAsync(x => x.PublicKey == key);
+            if (@class == null)
             {
                 return NotFound();
             }
-            return Ok(course);
+            return Ok(@class);
         }
 
         /// <summary>
-        /// 更新课程（未实现，禁用！）
+        /// 更新班级信息（未实现，禁用！）
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="course"></param>
+        /// <param name="class"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> PutCourse(string id, Course course)
+        public async Task<IActionResult> PutClass(string id, Class @class)
         {
             throw new NotImplementedException();
-            if (id != course.Id)
+            if (id != @class.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(course).State = EntityState.Modified;
+            _context.Entry(@class).State = EntityState.Modified;
 
             try
             {
@@ -103,7 +103,7 @@ namespace AchillService.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CourseExists(id))
+                if (!ClassExists(id))
                 {
                     return NotFound();
                 }
@@ -115,34 +115,31 @@ namespace AchillService.Controllers
             return NoContent();
         }
 
-        // POST: api/Courses
         /// <summary>
-        /// 添加课程
+        /// 添加班级
         /// </summary>
-        /// <param name="course"></param>
+        /// <param name="class"></param>
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> PostCourse([FromBody] Course course)
+        public async Task<ActionResult<Class>> PostClass(Class @class)
         {
-            var publicKey = new PublicKey { Type = PublicKeyType.Course };
-            _context.PublicKeys.Add(publicKey);
+            var publicKey = new PublicKey { Type = PublicKeyType.Class };
+            await _context.PublicKeys.AddAsync(publicKey);
             await _context.SaveChangesAsync();
 
-            course.PublicKey = publicKey.Key;
-            course.FacultyId = _userManager.GetUserId(User);
-            course.FacultyName = User.Identity.Name;
+            @class.PublicKey = publicKey.Key;
 
-            await _context.Courses.AddAsync(course);
+            await _context.Classes.AddAsync(@class);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (CourseExists(course.Id))
+                if (ClassExists(@class.Id))
                 {
                     return Conflict();
                 }
@@ -152,12 +149,11 @@ namespace AchillService.Controllers
                 }
             }
 
-            return CreatedAtAction("GetCourse", new { id = course.Id }, course);
+            return CreatedAtAction("GetClass", new { id = @class.Id }, @class);
         }
 
-        // DELETE: api/Courses/5
         /// <summary>
-        /// 删除课程，并且级联删除选课记录
+        /// 删除班级
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -165,24 +161,25 @@ namespace AchillService.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> DeleteCourse(string id)
+        public async Task<ActionResult<Class>> DeleteClass(string id)
         {
-            var course = await _context.Courses.FindAsync(id);
-            if (course == null)
+            var @class = await _context.Classes.FindAsync(id);
+            if (@class == null)
             {
                 return NotFound();
             }
-            var publicKey = await _context.PublicKeys.FirstOrDefaultAsync(x => x.Key == course.PublicKey);
+
+            var publicKey = await _context.PublicKeys.FirstOrDefaultAsync(x => x.Key == @class.PublicKey);
             _context.PublicKeys.Remove(publicKey);
-            _context.Courses.Remove(course);
+            _context.Classes.Remove(@class);
             await _context.SaveChangesAsync();
 
-            return Ok(course);
+            return @class;
         }
 
-        private bool CourseExists(string id)
+        private bool ClassExists(string id)
         {
-            return _context.Courses.Any(e => e.Id == id);
+            return _context.Classes.Any(e => e.Id == id);
         }
     }
 }

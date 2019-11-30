@@ -26,8 +26,6 @@ namespace AchillService.Data
 
         public DbSet<ApplicationUserCourse> ApplicationUserCourses { get; set; }
 
-        public DbSet<ClassCourse> ClassCourses { get; set; }
-
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             :base (options)
         {
@@ -38,37 +36,34 @@ namespace AchillService.Data
         {
             builder.Entity<ApplicationUserClass>().HasKey(ac => new { ac.ApplicationUserId, ac.ClassId});
             builder.Entity<ApplicationUserCourse>().HasKey(ac => new { ac.ApplicationUserId, ac.CourseId });
-            builder.Entity<ClassCourse>().HasKey(cc => new { cc.ClassId, cc.CourseId });
 
             builder.Entity<ApplicationUserClass>()
-                .HasOne<ApplicationUser>(ac => ac.ApplicationUser)
+                .HasOne(ac => ac.ApplicationUser)
                 .WithMany(a => a.ApplicationUserClasses)
                 .HasForeignKey(ac => ac.ApplicationUserId);
 
             builder.Entity<ApplicationUserClass>()
-                .HasOne<Class>(ac => ac.Class)
+                .HasOne(ac => ac.Class)
                 .WithMany(c => c.ApplicationUserClasses)
                 .HasForeignKey(ac => ac.ClassId);
 
             builder.Entity<ApplicationUserCourse>()
-                .HasOne<ApplicationUser>(ac => ac.ApplicationUser)
+                .HasOne(ac => ac.ApplicationUser)
                 .WithMany(a => a.ApplicationUserCourses)
                 .HasForeignKey(ac => ac.ApplicationUserId);
 
             builder.Entity<ApplicationUserCourse>()
-                .HasOne<Course>(ac => ac.Course)
+                .HasOne(ac => ac.Course)
                 .WithMany(c => c.ApplicationUserCourses)
                 .HasForeignKey(ac => ac.CourseId);
 
-            builder.Entity<ClassCourse>()
-                .HasOne<Class>(cc => cc.Class)
-                .WithMany(c => c.ClassCourses)
-                .HasForeignKey(cc => cc.ClassId);
+            builder.Entity<Comment>()
+                .HasOne(c => c.Issue)
+                .WithMany(i => i.Comments);
 
-            builder.Entity<ClassCourse>()
-                .HasOne<Course>(cc => cc.Course)
-                .WithMany(c => c.ClassCourses)
-                .HasForeignKey(cc => cc.CourseId);
+            builder.Entity<Issue>()
+                .HasMany(c => c.Comments)
+                .WithOne(i => i.Issue);
 
             base.OnModelCreating(builder);
         }

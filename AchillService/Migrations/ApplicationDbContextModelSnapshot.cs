@@ -149,21 +149,6 @@ namespace AchillService.Migrations
                     b.ToTable("Classes");
                 });
 
-            modelBuilder.Entity("AchillService.Models.ClassCourse", b =>
-                {
-                    b.Property<string>("ClassId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CourseId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ClassId", "CourseId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("ClassCourses");
-                });
-
             modelBuilder.Entity("AchillService.Models.Comment", b =>
                 {
                     b.Property<string>("Id")
@@ -173,16 +158,23 @@ namespace AchillService.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("IssueId")
+                    b.Property<string>("Content")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IssueId")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Username")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IssueId");
 
                     b.ToTable("Comments");
                 });
@@ -231,22 +223,35 @@ namespace AchillService.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ClassId")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CourseId")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Description")
                         .IsConcurrencyToken()
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsOpen")
                         .IsConcurrencyToken()
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("IssueTime")
+                        .IsConcurrencyToken()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IssueType")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ParentId")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tags")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -617,17 +622,11 @@ namespace AchillService.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AchillService.Models.ClassCourse", b =>
+            modelBuilder.Entity("AchillService.Models.Comment", b =>
                 {
-                    b.HasOne("AchillService.Models.Class", "Class")
-                        .WithMany("ClassCourses")
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AchillService.Models.Course", "Course")
-                        .WithMany("ClassCourses")
-                        .HasForeignKey("CourseId")
+                    b.HasOne("AchillService.Models.Issue", "Issue")
+                        .WithMany("Comments")
+                        .HasForeignKey("IssueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

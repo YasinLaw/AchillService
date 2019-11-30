@@ -6,6 +6,7 @@ using AchillService.Models;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,8 +29,11 @@ namespace AchillService.Controllers
             _userManager = userManager;
         }
 
-        [HttpPost("token")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/json")]
+        [HttpPost("token")]
         public async Task<IActionResult> Exchange()
         {
             var request = HttpContext.GetOpenIdConnectRequest();

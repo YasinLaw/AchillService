@@ -17,10 +17,10 @@ namespace AchillService.Models
         public string RealName { get; set; }
 
         [JsonIgnore]
-        public virtual ICollection<ApplicationUserClass> ApplicationUserClasses { get; set; }
+        public virtual ICollection<ApplicationUserClass> ApplicationUserClasses { get; }
 
         [JsonIgnore]
-        public virtual ICollection<ApplicationUserCourse> ApplicationUserCourses { get; set; }
+        public virtual ICollection<ApplicationUserCourse> ApplicationUserCourses { get; }
     }
 
     public enum UserType

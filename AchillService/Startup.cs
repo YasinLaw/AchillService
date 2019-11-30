@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using OpenIddict.Abstractions;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
 
 namespace AchillService
 {
@@ -83,9 +85,34 @@ namespace AchillService
 
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Achill Service API", Version = "v1" });
+                var securitySchema = new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                };
+                options.AddSecurityDefinition("Bearer", securitySchema);
+
+                var securityRequirement = new OpenApiSecurityRequirement
+                {
+                    { securitySchema, new[] { "Bearer" } }
+                };
+                options.AddSecurityRequirement(securityRequirement);
+
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Achill Service API", Version = "v1" });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
             });
         }
 

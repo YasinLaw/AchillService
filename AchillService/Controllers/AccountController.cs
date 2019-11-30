@@ -1,12 +1,10 @@
-﻿using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
-using AchillService.Data;
 using AchillService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OpenIddict.Validation;
 
 namespace AchillService.Controllers
@@ -18,44 +16,36 @@ namespace AchillService.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ApplicationDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager,
-            ApplicationDbContext context)
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _context = context;
         }
         /// <summary>
-        /// Call /api/register
+        /// 注册用户
         /// </summary>
-        /// <param name="email">string</param>
-        /// <param name="username">string</param>
-        /// <param name="password">string</param>
-        /// <param name="gender">bool</param>
-        /// <param name="type">int</param>
-        /// <param name="realname">string</param>
-        /// <returns></returns>
+        /// <param name="model">用户注册模型</param>
+        /// <response code="201">创建用户成功</response>
+        /// <response code="400">模型验证失败</response>
+        /// <response code="409">用户已注册</response>
+        /// <returns>创建用户信息</returns>
+        /// <exception cref="ArgumentNullException">注册模型为null</exception>
         [HttpPost]
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApplicationUser), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return StatusCode(StatusCodes.Status406NotAcceptable);
-            }
             if (await _userManager.FindByEmailAsync(model.Email) != null
                 || await _userManager.FindByNameAsync(model.Username) != null)
             {
-                return StatusCode(StatusCodes.Status409Conflict);
+                return Conflict();
             }
 
             var user = new ApplicationUser
@@ -103,7 +93,7 @@ namespace AchillService.Controllers
                     default:
                         break;
                 }
-                return CreatedAtAction("GetApplicationUser", user);
+                return StatusCode(StatusCodes.Status201Created);
             }
             else
             {
@@ -111,16 +101,31 @@ namespace AchillService.Controllers
             }
         }
 
+        /// <summary>
+        /// 获取当前用户信息
+        /// </summary>
+        /// <returns>当前用户信息</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(ApplicationUser), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Produces("application/json")]
         public async Task<IActionResult> GetApplicationUser()
         {
             var user = await _userManager.GetUserAsync(User);
             return Ok(user);
         }
         
+        /// <summary>
+        /// 查找用户信息
+        /// </summary>
+        /// <param name="id">用户id</param>
+        /// <returns></returns>
         [Authorize(Roles = "Developer")]
         [AllowAnonymous]
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApplicationUser), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> GetApplicationUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -131,8 +136,16 @@ namespace AchillService.Controllers
             return Ok(user);
         }
 
-        // [Authorize(Roles = "Developer")]
+        /// <summary>
+        /// 删除用户
+        /// </summary>
+        /// <param name="id">用户id</param>
+        /// <returns></returns>
+        [Authorize(Roles = "Developer")]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> DeleteApplicationUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -140,13 +153,6 @@ namespace AchillService.Controllers
             {
                 return NotFound();
             }
-            var classes = await _context.ApplicationUsersClasses.Where(x => x.ApplicationUser == user).ToListAsync();
-            var courses = await _context.ApplicationUserCourses.Where(x => x.ApplicationUser == user).ToListAsync();
-
-            _context.ApplicationUsersClasses.RemoveRange(classes);
-            _context.ApplicationUserCourses.RemoveRange(courses);
-
-            await _context.SaveChangesAsync();
             await _userManager.DeleteAsync(user);
 
             return Ok();

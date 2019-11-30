@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AchillService.Models
 {
@@ -16,7 +13,15 @@ namespace AchillService.Models
         [ConcurrencyCheck]
         public string Username { get; set; }
 
+        [Required]
+        [ConcurrencyCheck]
+        public string Content { get; set; }
+
         [ConcurrencyCheck]
         public DateTime CommentTime { get; set; } = DateTime.Now;
+
+        [JsonIgnore]
+        [ConcurrencyCheck]
+        public Issue Issue { get; set; }
     }
 }

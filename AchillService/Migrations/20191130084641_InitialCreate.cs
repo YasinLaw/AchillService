@@ -64,20 +64,6 @@ namespace AchillService.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comments",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    IssueId = table.Column<string>(nullable: false),
-                    Username = table.Column<string>(nullable: true),
-                    CommentTime = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Courses",
                 columns: table => new
                 {
@@ -100,10 +86,13 @@ namespace AchillService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(nullable: false),
-                    ClassId = table.Column<string>(nullable: true),
-                    CourseId = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: false),
-                    IsOpen = table.Column<bool>(nullable: false)
+                    IssueType = table.Column<int>(nullable: false),
+                    ParentId = table.Column<string>(nullable: false),
+                    Title = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(nullable: true),
+                    Tags = table.Column<string>(nullable: true),
+                    IsOpen = table.Column<bool>(nullable: false),
+                    IssueTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -317,25 +306,22 @@ namespace AchillService.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ClassCourses",
+                name: "Comments",
                 columns: table => new
                 {
-                    ClassId = table.Column<string>(nullable: false),
-                    CourseId = table.Column<string>(nullable: false)
+                    Id = table.Column<string>(nullable: false),
+                    IssueId = table.Column<string>(nullable: false),
+                    Username = table.Column<string>(nullable: true),
+                    Content = table.Column<string>(nullable: false),
+                    CommentTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClassCourses", x => new { x.ClassId, x.CourseId });
+                    table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ClassCourses_Classes_ClassId",
-                        column: x => x.ClassId,
-                        principalTable: "Classes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ClassCourses_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
+                        name: "FK_Comments_Issues_IssueId",
+                        column: x => x.IssueId,
+                        principalTable: "Issues",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -448,9 +434,9 @@ namespace AchillService.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClassCourses_CourseId",
-                table: "ClassCourses",
-                column: "CourseId");
+                name: "IX_Comments_IssueId",
+                table: "Comments",
+                column: "IssueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -511,13 +497,7 @@ namespace AchillService.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "ClassCourses");
-
-            migrationBuilder.DropTable(
                 name: "Comments");
-
-            migrationBuilder.DropTable(
-                name: "Issues");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
@@ -529,16 +509,19 @@ namespace AchillService.Migrations
                 name: "PublicKeys");
 
             migrationBuilder.DropTable(
+                name: "Courses");
+
+            migrationBuilder.DropTable(
+                name: "Classes");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Classes");
-
-            migrationBuilder.DropTable(
-                name: "Courses");
+                name: "Issues");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

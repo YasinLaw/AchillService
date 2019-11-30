@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AchillService.Models
 {
@@ -33,8 +31,5 @@ namespace AchillService.Models
 
         [JsonIgnore]
         public virtual ICollection<ApplicationUserCourse> ApplicationUserCourses { get; set; }
-
-        [JsonIgnore]
-        public virtual ICollection<ClassCourse> ClassCourses { get; set; }
     }
 }
